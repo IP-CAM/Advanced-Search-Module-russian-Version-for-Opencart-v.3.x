@@ -12,42 +12,17 @@
     display: flex;
     align-items: center;
     cursor: pointer;
+    color: black;
+  }
+  .advanced-search-category-name {
+    white-space: nowrap;
   }
   .advanced-search-category-select i {
     margin-left: 15px;
     padding: 0;
     font-size: 10px;
     height: 15px;
-  }
-  .advanced-search-category-list {
-    display: none;
-    position: absolute;
-    width: 300px;
-    height: fit-content;
-    background-color: #fff;
-    top: 20px;
-    -webkit-box-shadow: 0px 6px 8px 0px rgba(34, 60, 80, 0.3);
-    -moz-box-shadow: 0px 6px 8px 0px rgba(34, 60, 80, 0.3);
-    box-shadow: 0px 6px 8px 0px rgba(34, 60, 80, 0.3);
-    border-bottom-left-radius: 5px;
-    border-bottom-right-radius: 5px;
-    z-index: 2;
-    padding: 15px 25px 20px;
-  }
-  .advanced-search-category-list-item {
-    font-weight: bold;
-    padding: 7px 0;
-  }
-  .advanced-search-category-list-item:first-child {
-    padding: 7px 0;
-  }
-  .advanced-search-category-list-separator {
-    border-top: 1px solid gray;
-    margin-top: 15px;
-    margin-bottom: 15px;
-  }
-  .advanced-search-category-list-item-all-categories {
-    font-weight: bold;
+    width: 120px;
   }
   .advanced-search-field {
     -webkit-box-shadow: -2px 4px 8px -4px rgba(34, 60, 80, 0.2) inset;
@@ -57,148 +32,281 @@
     border-bottom-right-radius: 50px;
     border-top-right-radius: 50px;
     width: 100%;
+    background-color: transparent;
+    z-index: 97;
+  }
+  .advanced-search-field-placeholder {
+    position: absolute;
+    left: 122px;
+    width: calc(100% - 125px);
+    z-index: 97;
+    border: none;
+    box-shadow: none;
+    padding: 5px 15px;
+    margin: 0;
+    outline: none;
+    top: 1px;
   }
   .advanced-search-base-styles {
     padding: 5px 15px;
     margin: 0;
     border: 1px solid #e3e3e3;
     outline: none;
-    z-index: 3;
+    z-index: 99;
   }
   .advanced-search-icon {
     position: absolute;
     top: 23%;
-    z-index: 1;
+    z-index: 99;
     right: 15px;
+    cursor: pointer;
   }
   .advanced-search .advanced-search-container .caret {
     margin-left: 10px;
   }
+  .scrollable-menu {
+    height: auto;
+    max-height: 600px;
+    overflow-x: hidden;
+  }
   .advanced-search .advanced-search-container .dropdown-menu {
-    top: 15px;
+    top: 14px;
     border-bottom-left-radius: 5px;
     border-bottom-right-radius: 5px;
-    z-index: 2;
+    z-index: 97;
     padding: 15px 0 20px;
+    border-top: none;
   }
   .advanced-search .advanced-search-container .dropdown-menu li a {
     padding: 8px 35px;
     font-weight: bold;
   }
   .advanced-search .advanced-search-container .dropdown-menu li > a:hover {
-    background-color: #dddddd;
+    background-color: rgba(205, 205, 205, 0.2);
     background-image: none;
     color: #000;
+  }
+  .advanced-search .advanced-search-container .dropdown-menu li.divider {
+    margin: 10px 35px;
+  }
+
+  /* autocomplete  */
+  .advanced-search-autocomplete-li {
+    padding: 10px 20px 0;
+  }
+  .ui-menu .ui-menu-item:first-child {
+    margin-top: 13px;
+  }
+  .advanced-search-autocomplete-li:hover {
+    background-color: rgba(205, 205, 205, 0.2);
+    border: none;
+  }
+  .advanced-search-autocomplete-li:hover .advanced-search-autocomplete-a {
+    background-color: transparent;
+    border: none;
+  }
+  .advanced-search-autocomplete-li .fa-search {
+    color: #dadada;
+    font-size: 20px;
+  }
+  .advanced-search-autocomplete-span {
+    margin-left: 15px;
+  }
+  .ui-front {
+    z-index: 0 !important;
+  }
+  .ui-autocomplete .advanced-search-autocomplete-li .ui-corner-all {
+    background-color: transparent;
+    border: none;
+    display: flex;
+    align-items: baseline;
+    font-size: 14px;
+    border-bottom: 1px solid #e5e5e5;
+    padding-bottom: 10px;
+  }
+  .ui-autocomplete .advanced-search-autocomplete-li:last-child .ui-corner-all {
+    border: none;
+  }
+  .ui-autocomplete .advanced-search-autocomplete-li .ui-state-focus {
+    margin: 0;
   }
 </style>
 
 <div class="advanced-search">
   <div class="advanced-search-container">
-    <span class="advanced-search-category-select advanced-search-base-styles dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">Категории <span class="caret"></span></span>
+    <span class="advanced-search-category-select advanced-search-base-styles dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">
+      <span class="advanced-search-category-name" id="advanced-search-category-name">Категории</span>
+      <span class="caret"></span>
+    </span>
 
-    <ul class="dropdown-menu">
-      <li><a href="#">Action</a></li>
-      <li><a href="#">Another action</a></li>
-      <li><a href="#">Something else here</a></li>
-      <li><a href="#">Separated link</a></li>
+    <ul class="dropdown-menu scrollable-menu">
+      {% for category in categories %}
+        <li><a href="#" data-category-id="{{ category.category_id }}" data-title="{{ category.name }}">{{ category.name }}</a></li>
+      {% endfor %}
       <li role="separator" class="divider"></li>
-      <li><a href="#">One more separated link</a></li>
+      <li><a href="#" data-title="Категории">Все категории</a></li>
     </ul>
-
-    <div class="advanced-search-category-list">
-      <div class="advanced-search-category-list-item">
-        Помидор
-      </div>
-      <div class="advanced-search-category-list-item">
-        Помидор
-      </div>
-      <div class="advanced-search-category-list-item">
-        Помидор
-      </div>
-      <div class="advanced-search-category-list-item">
-        Помидор
-      </div>
-      <div class="advanced-search-category-list-item">
-        Помидор
-      </div>
-      <div class="advanced-search-category-list-item">
-        Помидор
-      </div>
-      <hr class="advanced-search-category-list-separator">
-      <div class="advanced-search-category-list-item-all-categories">
-        Помидор
-      </div>
-    </div>
-    <input type="text" class="advanced-search-field advanced-search-base-styles" placeholder="" />
+    <input type="hidden" id="advanced-search-selected-category-id">
+    <input type="text" id="advanced-search-field" class="advanced-search-field advanced-search-base-styles" placeholder="{{ text_search }}" />
+    <input type="text" id="advanced-search-field-placeholder" class="advanced-search-field-placeholder" value="" />
     <span class="advanced-search-icon">
       <i class="fa fa-search"></i>
     </span>
   </div>
 </div>
 
+<script src="//ajax.aspnetcdn.com/ajax/jquery.ui/1.10.3/jquery-ui.min.js"></script>
+<link rel="stylesheet" href="//code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">
+
 <script>
-  // $('.advanced-search-category-select').on('focus', function () {
-  //   $('.advanced-search-category-list').toggle()
-  // })
+  $(function() {
+
+      $('.dropdown-menu a').on('click', function (event) {
+          event.preventDefault()
+          $('#advanced-search-selected-category-id').val($(this).attr('data-category-id'))
+          $('#advanced-search-category-name').text($(this).attr('data-title'))
+          let w = $('.advanced-search-category-select').outerWidth()
+          $('.advanced-search-field-placeholder').css({'width' : 'calc(100% - '+w+4+')', 'left': w})
+
+      })
+
+      var projects = [
+          {
+              value: "jquery",
+              label: "вода",
+              desc: "the write less, do more, JavaScript library",
+              icon: "jquery_32x32.png"
+          },
+          {
+              value: "jquery-ui",
+              label: "вода питьевая",
+              desc: "the official user interface library for jQuery",
+              icon: "jqueryui_32x32.png"
+          },
+          {
+              value: "sizzlejs",
+              label: "вода 5л",
+              desc: "a pure-JavaScript CSS selector engine",
+              icon: "sizzlejs_32x32.png"
+          }
+      ];
+
+      let advancedSearch =
+          $('#advanced-search-field').autocomplete({
+              // delay: 100,
+              source: function(request, response) {
+                  $.ajax({
+                      url: 'index.php?route=extension/module/advanced_search_nik/autocomplete&filter_name=' +  encodeURIComponent(request.term) + '&filter_category=' + $('#advanced-search-selected-category-id').val(),
+                      dataType: 'json',
+                      success: function(json) {
+                          response($.map(json, function(item) {
+                              return {
+                                  label: item.name,
+                                  value: item.product_id,
+                                  image: item.image
+                              }
+                          }));
+                      }
+                  });
+              },
+              select: function(event, ui) {
+                  $('input[name=\'search\']').val(ui.item.label);
+                  $('.button-search').trigger('click');
+                  return false;
+              },
+              position: {  collision: "fit"  },
+              open: function() {
+                  $("ul.ui-autocomplete").width( $(this).innerWidth() );
+              },
+              response: function (event, ui) {
+                  if (ui.content[0]) {
+                      // todo insert to placeholder
+                      let re = new RegExp(event.target.value.toLowerCase(), "ig");
+                      let t = ui.content[0].label.replace(re, event.target.value);
+                      $('.advanced-search-field-placeholder').val(t)
+                  } else {
+                      $('.advanced-search-field-placeholder').val('')
+                  }
+              }
+          }).data("ui-autocomplete")._renderItem = function (ul, item) {
+              let re = new RegExp(this.term, "ig");
+              let t = item.label.replace(re, "<span style='font-weight:bold;'>" + this.term + "</span>");
+              return $("<li class='advanced-search-autocomplete-li'></li>")
+                  .data("item.autocomplete", item)
+                  .append("<a class='advanced-search-autocomplete-a'><i class='fa fa-search'></i><span class='advanced-search-autocomplete-span'>" + t + "</span></a>")
+                  .appendTo(ul);
+          };
+      $('#advanced-search-field').data("ui-autocomplete")._resizeMenu = function () {
+          let ul = this.menu.element;
+          ul.outerWidth(this.element.outerWidth());
+      }
+
+      $("#advanced-search-field").keyup("search", function () {
+          if (!this.value) {
+              $('.advanced-search-field-placeholder').val('')
+          }
+      })
+  })
+
     //AUTOCOMPLETE
-    $(document).ready(function() {
-        $('input[name=\'search\']').autocomplete({
-            delay: 100,
-            source: function(request, response) {
-                $.ajax({
-                    url: 'index.php?route=product/product/autocomplete&filter_name=' +  encodeURIComponent(request.term),
-                    dataType: 'json',
-                    success: function(json) {
-                        response($.map(json, function(item) {
-                            return {
-                                label: item.name,
-                                value: item.product_id,
-                                image: item.image
-                            }
-                        }));
-                    }
-                });
-            },
-            select: function(event, ui) {
-                $('input[name=\'search\']').val(ui.item.label);
-                $('.button-search').trigger('click');
-                return false;
-            },
-
-            focus: function(event, ui) {
-                return false;
-            }
-        }).data("autocomplete")._renderItem = function(ul, item) {
-            if (item.image) html = "<a><img src='" + item.image + "' /> " + item.label + "</a>";
-            else html = "<a>" + item.label + "</a>";
-
-            return $("<li>").data("item.autocomplete", item).append(html).appendTo(ul);
-        };
-    });
-
-    $('.button-search').bind('click', function() {
-        url = $('base').attr('href') + 'index.php?route=product/search';
-
-        var search = $('input[name=\'search\']').attr('value');
-
-        if (search) {
-            url += '&search=' + encodeURIComponent(search);
-        }
-
-        location = url;
-    });
-
-    $('#header input[name=\'search\']').bind('keydown', function(e) {
-        if (e.keyCode == 13) {
-            url = $('base').attr('href') + 'index.php?route=product/search';
-
-            var search = $('input[name=\'search\']').attr('value');
-
-            if (search) {
-                url += '&search=' + encodeURIComponent(search);
-            }
-
-            location = url;
-        }
-    });
+    // $(document).ready(function() {
+    //     $('input[name=\'search\']').autocomplete({
+    //         delay: 100,
+    //         source: function(request, response) {
+    //             $.ajax({
+    //                 url: 'index.php?route=product/product/autocomplete&filter_name=' +  encodeURIComponent(request.term),
+    //                 dataType: 'json',
+    //                 success: function(json) {
+    //                     response($.map(json, function(item) {
+    //                         return {
+    //                             label: item.name,
+    //                             value: item.product_id,
+    //                             image: item.image
+    //                         }
+    //                     }));
+    //                 }
+    //             });
+    //         },
+    //         select: function(event, ui) {
+    //             $('input[name=\'search\']').val(ui.item.label);
+    //             $('.button-search').trigger('click');
+    //             return false;
+    //         },
+    //
+    //         focus: function(event, ui) {
+    //             return false;
+    //         }
+    //     }).data("autocomplete")._renderItem = function(ul, item) {
+    //         if (item.image) html = "<a><img src='" + item.image + "' /> " + item.label + "</a>";
+    //         else html = "<a>" + item.label + "</a>";
+    //
+    //         return $("<li>").data("item.autocomplete", item).append(html).appendTo(ul);
+    //     };
+    // });
+    //
+    // $('.button-search').bind('click', function() {
+    //     url = $('base').attr('href') + 'index.php?route=product/search';
+    //
+    //     var search = $('input[name=\'search\']').attr('value');
+    //
+    //     if (search) {
+    //         url += '&search=' + encodeURIComponent(search);
+    //     }
+    //
+    //     location = url;
+    // });
+    //
+    // $('#header input[name=\'search\']').bind('keydown', function(e) {
+    //     if (e.keyCode == 13) {
+    //         url = $('base').attr('href') + 'index.php?route=product/search';
+    //
+    //         var search = $('input[name=\'search\']').attr('value');
+    //
+    //         if (search) {
+    //             url += '&search=' + encodeURIComponent(search);
+    //         }
+    //
+    //         location = url;
+    //     }
+    // });
 </script>
