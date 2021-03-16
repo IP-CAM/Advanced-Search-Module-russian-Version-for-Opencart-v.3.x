@@ -37,7 +37,7 @@
   }
   .advanced-search-field-placeholder {
     position: absolute;
-    left: 122px;
+    left: 123px;
     width: calc(100% - 125px);
     z-index: 97;
     border: none;
@@ -161,6 +161,22 @@
 <script>
   $(function() {
 
+      $('.advanced-search-icon').on('click', function () {
+          let url = $('base').attr('href') + 'index.php?route=product/search';
+          let value = $('#advanced-search-field').val();
+          let category = $('#advanced-search-selected-category-id').val()
+
+          if (value) {
+              url += '&search=' + encodeURIComponent(value);
+
+              if(category) {
+                  url += '&category_id=' + encodeURIComponent(category);
+              }
+          }
+
+          location = url;
+      })
+
       $('.dropdown-menu a').on('click', function (event) {
           event.preventDefault()
           $('#advanced-search-selected-category-id').val($(this).attr('data-category-id'))
@@ -193,7 +209,7 @@
 
       let advancedSearch =
           $('#advanced-search-field').autocomplete({
-              // delay: 100,
+              delay: 100,
               source: function(request, response) {
                   $.ajax({
                       url: 'index.php?route=extension/module/advanced_search_nik/autocomplete&filter_name=' +  encodeURIComponent(request.term) + '&filter_category=' + $('#advanced-search-selected-category-id').val(),
@@ -210,8 +226,8 @@
                   });
               },
               select: function(event, ui) {
-                  $('input[name=\'search\']').val(ui.item.label);
-                  $('.button-search').trigger('click');
+                  $('#advanced-search-field').val(ui.item.label);
+                  $('.advanced-search-icon').trigger('click');
                   return false;
               },
               position: {  collision: "fit"  },
@@ -221,16 +237,22 @@
               response: function (event, ui) {
                   if (ui.content[0]) {
                       // todo insert to placeholder
-                      let re = new RegExp(event.target.value.toLowerCase(), "ig");
-                      let t = ui.content[0].label.replace(re, event.target.value);
-                      $('.advanced-search-field-placeholder').val(t)
+                      let re = new RegExp(event.target.value.trim(), "ig");
+
+                      let t = ui.content[0].label.replace(re, event.target.value.trim());
+
+                      if((ui.content[0].label.length >= event.target.value.trim().length) && ui.content[0].label.toLowerCase().includes(event.target.value.trim())) {
+                          $('.advanced-search-field-placeholder').val(t)
+                      } else {
+                          $('.advanced-search-field-placeholder').val('')
+                      }
                   } else {
                       $('.advanced-search-field-placeholder').val('')
                   }
               }
           }).data("ui-autocomplete")._renderItem = function (ul, item) {
-              let re = new RegExp(this.term, "ig");
-              let t = item.label.replace(re, "<span style='font-weight:bold;'>" + this.term + "</span>");
+              let re = new RegExp(this.term.trim(), "ig");
+              let t = item.label.replace(re, "<span style='font-weight:bold;'>" + item.label.substr(0, this.term.length) + "</span>");
               return $("<li class='advanced-search-autocomplete-li'></li>")
                   .data("item.autocomplete", item)
                   .append("<a class='advanced-search-autocomplete-a'><i class='fa fa-search'></i><span class='advanced-search-autocomplete-span'>" + t + "</span></a>")
