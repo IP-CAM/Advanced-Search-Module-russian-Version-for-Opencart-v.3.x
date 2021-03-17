@@ -12,6 +12,16 @@ class ModelExtensionModuleAdvancedSearchNik extends Model {
         return $query->rows;
     }
 
+    public function getCategoryParents($category_id) {
+        $sql = "SELECT cp.category_id AS category_id, GROUP_CONCAT(cd1.name ORDER BY cp.level SEPARATOR '&nbsp;&#47;&nbsp;') AS name, c1.parent_id, c1.sort_order FROM " . DB_PREFIX . "category_path cp LEFT JOIN " . DB_PREFIX . "category c1 ON (cp.category_id = c1.category_id) LEFT JOIN " . DB_PREFIX . "category c2 ON (cp.path_id = c2.category_id) LEFT JOIN " . DB_PREFIX . "category_description cd1 ON (cp.path_id = cd1.category_id) LEFT JOIN " . DB_PREFIX . "category_description cd2 ON (cp.category_id = cd2.category_id) WHERE cd1.language_id = '" . (int)$this->config->get('config_language_id') . "' AND cd2.language_id = '" . (int)$this->config->get('config_language_id') . "' AND cp.category_id = '" . $category_id . "'";
+
+        $sql .= " GROUP BY cp.category_id";
+
+        $query = $this->db->query($sql);
+
+        return $query->row;
+    }
+
     public function getProducts($data = array()) {
         $sql = "SELECT p.product_id, (SELECT AVG(rating) AS total FROM " . DB_PREFIX . "review r1 WHERE r1.product_id = p.product_id AND r1.status = '1' GROUP BY r1.product_id) AS rating, (SELECT price FROM " . DB_PREFIX . "product_discount pd2 WHERE pd2.product_id = p.product_id AND pd2.customer_group_id = '" . (int)$this->config->get('config_customer_group_id') . "' AND pd2.quantity = '1' AND ((pd2.date_start = '0000-00-00' OR pd2.date_start < NOW()) AND (pd2.date_end = '0000-00-00' OR pd2.date_end > NOW())) ORDER BY pd2.priority ASC, pd2.price ASC LIMIT 1) AS discount, (SELECT price FROM " . DB_PREFIX . "product_special ps WHERE ps.product_id = p.product_id AND ps.customer_group_id = '" . (int)$this->config->get('config_customer_group_id') . "' AND ((ps.date_start = '0000-00-00' OR ps.date_start < NOW()) AND (ps.date_end = '0000-00-00' OR ps.date_end > NOW())) ORDER BY ps.priority ASC, ps.price ASC LIMIT 1) AS special";
 
@@ -31,7 +41,10 @@ class ModelExtensionModuleAdvancedSearchNik extends Model {
             $sql .= " FROM " . DB_PREFIX . "product p";
         }
 
+        $sql .= " LEFT JOIN " . DB_PREFIX .  "manufacturer m ON (m.manufacturer_id = p.manufacturer_id)";
+
         $sql .= " LEFT JOIN " . DB_PREFIX . "product_description pd ON (p.product_id = pd.product_id) LEFT JOIN " . DB_PREFIX . "product_to_store p2s ON (p.product_id = p2s.product_id) WHERE pd.language_id = '" . (int)$this->config->get('config_language_id') . "' AND p.status = '1' AND p.date_available <= NOW() AND p2s.store_id = '" . (int)$this->config->get('config_store_id') . "'";
+
 
         if (!empty($data['filter_category_id'])) {
             if (!empty($data['filter_sub_category'])) {
@@ -63,9 +76,9 @@ class ModelExtensionModuleAdvancedSearchNik extends Model {
 
                 foreach ($words as $k => $word) {
                     if($k == 0) {
-                        $implode[] = "pd.name LIKE '" . $this->db->escape($word) . "%'";
+                        $implode[] = "CONCAT(pd.name, ' ', m.name) LIKE '%" . $this->db->escape($word) . "%'";
                     } else {
-                        $implode[] = "pd.name LIKE '%" . $this->db->escape($word) . "%'";
+                        $implode[] = "CONCAT(pd.name, ' ', m.name) LIKE '%" . $this->db->escape($word) . "%'";
                     }
                 }
 

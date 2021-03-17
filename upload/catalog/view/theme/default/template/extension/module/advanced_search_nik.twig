@@ -14,6 +14,10 @@
     cursor: pointer;
     color: black;
   }
+  .advanced-search-no-category {
+    border-top-left-radius: 50px;
+    border-bottom-left-radius: 50px;
+  }
   .advanced-search-category-name {
     white-space: nowrap;
   }
@@ -37,8 +41,8 @@
   }
   .advanced-search-field-placeholder {
     position: absolute;
-    left: 123px;
-    width: calc(100% - 125px);
+    /*left: 123px;*/
+    /*width: calc(100% - 125px);*/
     z-index: 97;
     border: none;
     box-shadow: none;
@@ -46,6 +50,7 @@
     margin: 0;
     outline: none;
     top: 1px;
+    border-radius: 50px;
   }
   .advanced-search-base-styles {
     padding: 5px 15px;
@@ -109,17 +114,38 @@
     color: #dadada;
     font-size: 20px;
   }
+  .advanced-search-autocomplete-p {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    margin: 0;
+  }
+  .advanced-search-autocomplete-div-inner {
+    display: flex;
+    flex-direction: row;
+    width: 100%;
+    justify-content: space-between;
+  }
   .advanced-search-autocomplete-span {
     margin-left: 15px;
   }
+  .advanced-search-autocomplete-span-description {
+    font-size: 11px;
+  }
+  .advanced-search-autocomplete-span-description-brand {
+    color: gray;
+  }
+  .advanced-search-autocomplete-span-price {
+    font-weight: bold;
+  }
   .ui-front {
-    z-index: 0 !important;
+    z-index: 96 !important;
   }
   .ui-autocomplete .advanced-search-autocomplete-li .ui-corner-all {
     background-color: transparent;
     border: none;
     display: flex;
-    align-items: baseline;
+    align-items: center;
     font-size: 14px;
     border-bottom: 1px solid #e5e5e5;
     padding-bottom: 10px;
@@ -130,24 +156,31 @@
   .ui-autocomplete .advanced-search-autocomplete-li .ui-state-focus {
     margin: 0;
   }
+  .advanced-search-autocomplete-empty-block {
+    width: 20px;
+    height: 20px;
+    background: transparent;
+  }
 </style>
 
-<div class="advanced-search">
+<div class="advanced-search {{ module_advanced_search_nik_module_class }}">
   <div class="advanced-search-container">
+    {% if module_advanced_search_nik_display_category %}
     <span class="advanced-search-category-select advanced-search-base-styles dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">
       <span class="advanced-search-category-name" id="advanced-search-category-name">Категории</span>
       <span class="caret"></span>
     </span>
 
-    <ul class="dropdown-menu scrollable-menu">
+    <ul class="dropdown-menu scrollable-menu advanced-search-category-list">
       {% for category in categories %}
         <li><a href="#" data-category-id="{{ category.category_id }}" data-title="{{ category.name }}">{{ category.name }}</a></li>
       {% endfor %}
       <li role="separator" class="divider"></li>
       <li><a href="#" data-title="Категории">Все категории</a></li>
     </ul>
+    {% endif %}
     <input type="hidden" id="advanced-search-selected-category-id">
-    <input type="text" id="advanced-search-field" class="advanced-search-field advanced-search-base-styles" placeholder="{{ text_search }}" />
+    <input type="text" id="advanced-search-field" class="advanced-search-field advanced-search-base-styles {% if not module_advanced_search_nik_display_category %}advanced-search-no-category{% endif %}" placeholder="{{ text_search }}" />
     <input type="text" id="advanced-search-field-placeholder" class="advanced-search-field-placeholder" value="" />
     <span class="advanced-search-icon">
       <i class="fa fa-search"></i>
@@ -159,9 +192,13 @@
 <link rel="stylesheet" href="//code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">
 
 <script>
+  $(document).ready(function () {
+      let w = $('.advanced-search-category-select').outerWidth()
+      w = w ? w : 0
+      $('.advanced-search-field-placeholder').css({'width' : 'calc(100% - ' + w + 'px)', 'left': w})
+  })
   $(function() {
-
-      $('.advanced-search-icon').on('click', function () {
+      function search() {
           let url = $('base').attr('href') + 'index.php?route=product/search';
           let value = $('#advanced-search-field').val();
           let category = $('#advanced-search-selected-category-id').val()
@@ -175,90 +212,117 @@
           }
 
           location = url;
-      })
+      }
 
-      $('.dropdown-menu a').on('click', function (event) {
+      $('.advanced-search-icon').on('click', function () {
+          search()
+      })
+      $('#advanced-search-field').bind('keydown', function(e) {
+          if (e.keyCode == 13) {
+              search()
+          }
+      });
+
+      $('.advanced-search-category-list a').on('click', function (event) {
           event.preventDefault()
           $('#advanced-search-selected-category-id').val($(this).attr('data-category-id'))
           $('#advanced-search-category-name').text($(this).attr('data-title'))
           let w = $('.advanced-search-category-select').outerWidth()
           $('.advanced-search-field-placeholder').css({'width' : 'calc(100% - '+w+4+')', 'left': w})
-
       })
 
-      var projects = [
-          {
-              value: "jquery",
-              label: "вода",
-              desc: "the write less, do more, JavaScript library",
-              icon: "jquery_32x32.png"
+      $('#advanced-search-field').autocomplete({
+          // delay: 100,
+          source: function(request, response) {
+              $.ajax({
+                  url: 'index.php?route=extension/module/advanced_search_nik/autocomplete&filter_name=' +  encodeURIComponent(request.term) + '&filter_category=' + $('#advanced-search-selected-category-id').val(),
+                  dataType: 'json',
+                  success: function(json) {
+                      response($.map(json, function(item) {
+                          return {
+                              label:       item.name,
+                              value:       item.name,
+                              image:       item.image,
+                              description: item.description,
+                              type:        item.type,
+                              price:       item.price
+                          }
+                      }));
+                  }
+              });
           },
-          {
-              value: "jquery-ui",
-              label: "вода питьевая",
-              desc: "the official user interface library for jQuery",
-              icon: "jqueryui_32x32.png"
+          select: function(event, ui) {
+              $('#advanced-search-field').val(ui.item.label);
+              $('.advanced-search-icon').trigger('click');
+              return false;
           },
-          {
-              value: "sizzlejs",
-              label: "вода 5л",
-              desc: "a pure-JavaScript CSS selector engine",
-              icon: "sizzlejs_32x32.png"
-          }
-      ];
+          // position: {  collision: "fit"  },
+          open: function() {
+              $('ul.ui-autocomplete').addClass('scrollable-menu')
+              $("ul.ui-autocomplete").width( $(this).innerWidth() + $('.advanced-search-category-select').outerWidth() );
+              let pos = $("ul.ui-autocomplete").position()
+              $("ul.ui-autocomplete").css( 'left', pos.left - $('.advanced-search-category-select').outerWidth() )
+              $("ul.ui-autocomplete").css( 'top', pos.top - 15 )
+          },
+          response: function (event, ui) {
+              if (ui.content[0]) {
+                  // todo insert to placeholder
+                  let re = new RegExp(event.target.value.trim(), "ig");
 
-      let advancedSearch =
-          $('#advanced-search-field').autocomplete({
-              delay: 100,
-              source: function(request, response) {
-                  $.ajax({
-                      url: 'index.php?route=extension/module/advanced_search_nik/autocomplete&filter_name=' +  encodeURIComponent(request.term) + '&filter_category=' + $('#advanced-search-selected-category-id').val(),
-                      dataType: 'json',
-                      success: function(json) {
-                          response($.map(json, function(item) {
-                              return {
-                                  label: item.name,
-                                  value: item.product_id,
-                                  image: item.image
-                              }
-                          }));
-                      }
-                  });
-              },
-              select: function(event, ui) {
-                  $('#advanced-search-field').val(ui.item.label);
-                  $('.advanced-search-icon').trigger('click');
-                  return false;
-              },
-              position: {  collision: "fit"  },
-              open: function() {
-                  $("ul.ui-autocomplete").width( $(this).innerWidth() );
-              },
-              response: function (event, ui) {
-                  if (ui.content[0]) {
-                      // todo insert to placeholder
-                      let re = new RegExp(event.target.value.trim(), "ig");
+                  let t = ui.content[0].label.replace(re, event.target.value.trim());
 
-                      let t = ui.content[0].label.replace(re, event.target.value.trim());
-
-                      if((ui.content[0].label.length >= event.target.value.trim().length) && ui.content[0].label.toLowerCase().includes(event.target.value.trim())) {
-                          $('.advanced-search-field-placeholder').val(t)
-                      } else {
-                          $('.advanced-search-field-placeholder').val('')
-                      }
+                  if((ui.content[0].label.length >= event.target.value.trim().length) && ui.content[0].label.toLowerCase().includes(event.target.value.trim())) {
+                      $('.advanced-search-field-placeholder').val(t)
                   } else {
                       $('.advanced-search-field-placeholder').val('')
                   }
+              } else {
+                  $('.advanced-search-field-placeholder').val('')
               }
-          }).data("ui-autocomplete")._renderItem = function (ul, item) {
-              let re = new RegExp(this.term.trim(), "ig");
-              let t = item.label.replace(re, "<span style='font-weight:bold;'>" + item.label.substr(0, this.term.length) + "</span>");
-              return $("<li class='advanced-search-autocomplete-li'></li>")
-                  .data("item.autocomplete", item)
-                  .append("<a class='advanced-search-autocomplete-a'><i class='fa fa-search'></i><span class='advanced-search-autocomplete-span'>" + t + "</span></a>")
-                  .appendTo(ul);
-          };
-      $('#advanced-search-field').data("ui-autocomplete")._resizeMenu = function () {
+          }
+      }).data("ui-autocomplete")._renderItem = function (ul, item) {
+          let re = new RegExp(this.term.trim(), "ig");
+          let t = item.label.replace(re, "<span style='font-weight:bold;'>" + this.term + "</span>");
+          let html = "<a class='advanced-search-autocomplete-a'>"
+
+          if (item.type === 'manufacturer' && item.image) {
+              html += "<img src='" + item.image + "' />"
+          } else if(item.type !== 'category' && item.type !== 'manufacturer' && item.image) {
+              html += "<span class='advanced-search-autocomplete-empty-block'></span>"
+          } else {
+              html += "<i class='fa fa-search'></i>"
+          }
+
+          html += "<div class='advanced-search-autocomplete-div-inner'>"
+          html += "<p class='advanced-search-autocomplete-p'><span class='advanced-search-autocomplete-span'>" + t + "</span>"
+
+          if (item.description && item.type === 'category') {
+              html += "<span class='advanced-search-autocomplete-span advanced-search-autocomplete-span-description'>" + item.description + "</span>";
+          }
+
+          if (item.description && item.type === 'manufacturer') {
+              html += "<span class='advanced-search-autocomplete-span advanced-search-autocomplete-span-description advanced-search-autocomplete-span-description-brand'>" + item.description + "</span>";
+          }
+
+          if (item.price) {
+              html += "<span class='advanced-search-autocomplete-span advanced-search-autocomplete-span-price'>" + item.price + "</span>";
+          }
+
+          html += '</p>'
+
+          if (item.type !== 'category' && item.type !== 'manufacturer' && item.image) {
+              html += "<img src='" + item.image + "' />"
+          }
+
+          html += "</div>"
+          html += "</a>";
+          return $("<li class='advanced-search-autocomplete-li'></li>")
+              .data("item.autocomplete", item)
+              .append(html)
+              .appendTo(ul);
+      };
+
+      $("#advanced-search-field").data("ui-autocomplete")._resizeMenu = function () {
           let ul = this.menu.element;
           ul.outerWidth(this.element.outerWidth());
       }
@@ -318,17 +382,4 @@
     //     location = url;
     // });
     //
-    // $('#header input[name=\'search\']').bind('keydown', function(e) {
-    //     if (e.keyCode == 13) {
-    //         url = $('base').attr('href') + 'index.php?route=product/search';
-    //
-    //         var search = $('input[name=\'search\']').attr('value');
-    //
-    //         if (search) {
-    //             url += '&search=' + encodeURIComponent(search);
-    //         }
-    //
-    //         location = url;
-    //     }
-    // });
 </script>
