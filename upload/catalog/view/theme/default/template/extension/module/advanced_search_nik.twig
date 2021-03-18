@@ -192,12 +192,13 @@
 <link rel="stylesheet" href="//code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">
 
 <script>
-  $(document).ready(function () {
-      let w = $('.advanced-search-category-select').outerWidth()
-      w = w ? w : 0
-      $('.advanced-search-field-placeholder').css({'width' : 'calc(100% - ' + w + 'px)', 'left': w})
-  })
   $(function() {
+      function getSizeAndPositionPlaceholder() {
+          let w = $('.advanced-search-category-select').outerWidth()
+          w = w ? w : 0
+          $('.advanced-search-field-placeholder').css({'width' : 'calc(100% - ' + w + 'px)', 'left': w})
+      }
+
       function search() {
           let url = $('base').attr('href') + 'index.php?route=product/search';
           let value = $('#advanced-search-field').val();
@@ -218,6 +219,7 @@
           search()
       })
       $('#advanced-search-field').bind('keydown', function(e) {
+          getSizeAndPositionPlaceholder()
           if (e.keyCode == 13) {
               search()
           }
