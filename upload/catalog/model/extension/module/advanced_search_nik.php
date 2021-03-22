@@ -22,6 +22,18 @@ class ModelExtensionModuleAdvancedSearchNik extends Model {
         return $query->row;
     }
 
+    public function getOrderedProducts($data = array()) {
+        $query = $this->db->query("SELECT product_id FROM " . DB_PREFIX . "order_product");
+
+        $products = array();
+
+        foreach ($query->rows as $product) {
+            $products[] = $product['product_id'];
+        }
+
+        return $products;
+    }
+
     public function getProducts($data = array()) {
         $sql = "SELECT p.product_id, (SELECT AVG(rating) AS total FROM " . DB_PREFIX . "review r1 WHERE r1.product_id = p.product_id AND r1.status = '1' GROUP BY r1.product_id) AS rating, (SELECT price FROM " . DB_PREFIX . "product_discount pd2 WHERE pd2.product_id = p.product_id AND pd2.customer_group_id = '" . (int)$this->config->get('config_customer_group_id') . "' AND pd2.quantity = '1' AND ((pd2.date_start = '0000-00-00' OR pd2.date_start < NOW()) AND (pd2.date_end = '0000-00-00' OR pd2.date_end > NOW())) ORDER BY pd2.priority ASC, pd2.price ASC LIMIT 1) AS discount, (SELECT price FROM " . DB_PREFIX . "product_special ps WHERE ps.product_id = p.product_id AND ps.customer_group_id = '" . (int)$this->config->get('config_customer_group_id') . "' AND ((ps.date_start = '0000-00-00' OR ps.date_start < NOW()) AND (ps.date_end = '0000-00-00' OR ps.date_end > NOW())) ORDER BY ps.priority ASC, ps.price ASC LIMIT 1) AS special";
 
@@ -124,6 +136,14 @@ class ModelExtensionModuleAdvancedSearchNik extends Model {
 
         if (!empty($data['filter_manufacturer_id'])) {
             $sql .= " AND p.manufacturer_id = '" . (int)$data['filter_manufacturer_id'] . "'";
+        }
+
+        if (!empty($data['favorite_products'])) {
+            $sql .= " AND p.product_id IN (" . implode(',', $data['favorite_products']) . ")";
+        }
+
+        if (!empty($data['ordered_products'])) {
+            $sql .= " AND p.product_id IN (" . implode(',', $data['ordered_products']) . ")";
         }
 
         $sql .= " GROUP BY p.product_id";

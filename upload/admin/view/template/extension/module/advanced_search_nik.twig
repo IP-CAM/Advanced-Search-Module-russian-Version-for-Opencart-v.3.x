@@ -40,9 +40,35 @@
             </div>
           </div>
           <div class="form-group">
-            <label class="col-sm-2 control-label" for="input-name">{{ entry_count_items_for_display }}</label>
+            <label class="col-sm-2 control-label" for="input-count-category-for-display">{{ entry_count_category_for_display }}</label>
             <div class="col-sm-10">
-              <input type="text" name="module_advanced_search_nik_count_items_for_display" value="{{ module_advanced_search_nik_count_items_for_display }}" placeholder="{{ entry_count_items_for_display  }}" id="input-name" class="form-control" />
+              <input type="text" name="module_advanced_search_nik_count_category_for_display" value="{{ module_advanced_search_nik_count_category_for_display }}" placeholder="{{ entry_count_category_for_display }}" id="input-count-category-for-display" class="form-control" />
+            </div>
+          </div>
+          <div class="form-group">
+            <label class="col-sm-2 control-label" for="input-display-brands">{{ entry_display_brands }}</label>
+            <div class="col-sm-10">
+              <select name="module_advanced_search_nik_display_brands" id="input-display-brands" class="form-control">
+                {% if module_advanced_search_nik_display_brands %}
+                  <option value="1" selected="selected">{{ text_yes }}</option>
+                  <option value="0">{{ text_no }}</option>
+                {% else %}
+                  <option value="1">{{ text_yes }}</option>
+                  <option value="0" selected="selected">{{ text_no }}</option>
+                {% endif %}
+              </select>
+            </div>
+          </div>
+          <div class="form-group">
+            <label class="col-sm-2 control-label" for="input-count-brands-for-display">{{ entry_count_brands_for_display }}</label>
+            <div class="col-sm-10">
+              <input type="text" name="module_advanced_search_nik_count_brands_for_display" value="{{ module_advanced_search_nik_count_brands_for_display }}" placeholder="{{ entry_count_brands_for_display }}" id="input-count-brands-for-display" class="form-control" />
+            </div>
+          </div>
+          <div class="form-group">
+            <label class="col-sm-2 control-label" for="input-count-items-for-display">{{ entry_count_items_for_display }}</label>
+            <div class="col-sm-10">
+              <input type="text" name="module_advanced_search_nik_count_items_for_display" value="{{ module_advanced_search_nik_count_items_for_display }}" placeholder="{{ entry_count_items_for_display }}" id="input-count-items-for-display" class="form-control" />
             </div>
           </div>
           <div class="form-group">
@@ -57,6 +83,19 @@
                   <option value="0" selected="selected">{{ text_no }}</option>
                 {% endif %}
               </select>
+            </div>
+          </div>
+          <div class="form-group">
+            <label class="col-sm-2 control-label" for="input-product">{{ entry_favorite_product }}</label>
+            <div class="col-sm-10">
+              <input type="text" name="product_name" value="" placeholder="{{ entry_favorite_product }}" id="input-product" class="form-control" />
+              <div id="favorite-product" class="well well-sm" style="height: 150px; overflow: auto;">
+                {% for product in products %}
+                  <div id="favorite-product{{ product.product_id }}"><i class="fa fa-minus-circle"></i> {{ product.name }}
+                    <input type="hidden" name="module_advanced_search_nik_favorite_products[]" value="{{ product.product_id }}" />
+                  </div>
+                {% endfor %}
+              </div>
             </div>
           </div>
           <div class="form-group">
@@ -84,4 +123,33 @@
     </div>
   </div>
 </div>
+<script type="text/javascript">
+    $('input[name=\'product_name\']').autocomplete({
+        source: function(request, response) {
+            $.ajax({
+                url: 'index.php?route=catalog/product/autocomplete&user_token={{ user_token }}&filter_name=' +  encodeURIComponent(request),
+                dataType: 'json',
+                success: function(json) {
+                    response($.map(json, function(item) {
+                        return {
+                            label: item['name'],
+                            value: item['product_id']
+                        }
+                    }));
+                }
+            });
+        },
+        select: function(item) {
+            $('input[name=\'product_name\']').val('');
+
+            $('#favorite-product' + item['value']).remove();
+
+            $('#favorite-product').append('<div id="favorite-product' + item['value'] + '"><i class="fa fa-minus-circle"></i> ' + item['label'] + '<input type="hidden" name="module_advanced_search_nik_favorite_products[]" value="' + item['value'] + '" /></div>');
+        }
+    });
+
+    $('#favorite-product').delegate('.fa-minus-circle', 'click', function() {
+        $(this).parent().remove();
+    });
+</script>
 {{ footer }}

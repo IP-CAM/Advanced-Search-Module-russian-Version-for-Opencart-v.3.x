@@ -8,6 +8,10 @@ class ControllerExtensionModuleAdvancedSearchNik extends Controller {
 
         $data = $this->model_setting_setting->getSetting('module_advanced_search_nik');
 
+//        echo "<pre>";
+//        var_dump($data);
+//        echo "</pre>";
+
         if ($data['module_advanced_search_nik_display_category']) {
             $data['categories'] = $this->model_extension_module_advanced_search_nik->getCategories();
         }
@@ -32,6 +36,14 @@ class ControllerExtensionModuleAdvancedSearchNik extends Controller {
                 $data['module_advanced_search_nik_count_items_for_display'] = 10;
             }
 
+            if(!$data['module_advanced_search_nik_count_brands_for_display']) {
+                $data['module_advanced_search_nik_count_brands_for_display'] = 10;
+            }
+
+            if(!$data['module_advanced_search_nik_count_category_for_display']) {
+                $data['module_advanced_search_nik_count_category_for_display'] = 10;
+            }
+
             if (isset($this->request->get['filter_name'])) {
                 $filter_name = $this->request->get['filter_name'];
             } else {
@@ -54,56 +66,81 @@ class ControllerExtensionModuleAdvancedSearchNik extends Controller {
                 'filter_name'        => $filter_name,
                 'filter_category_id' => $filter_category,
                 'start'              => 0,
-                'limit'              => $limit
+                'limit'              => $limit,
+                'favorite_products'  => $data['module_advanced_search_nik_favorite_products'] ? $data['module_advanced_search_nik_favorite_products'] : array()
             );
 
-            $results = $this->model_extension_module_advanced_search_nik->getProducts($filter_data);
+            $favorites_products = $this->model_extension_module_advanced_search_nik->getProducts($filter_data);
+            unset($filter_data['favorite_products']);
 
-            $products_categories = array();
-            foreach ($results as $result) {
-                $product_categories = $this->model_extension_module_advanced_search_nik->getCategoriesByProduct($result['product_id']);
+            $ordered = $this->model_extension_module_advanced_search_nik->getOrderedProducts();
+            $filter_data['ordered_products'] = $ordered;
 
-                foreach ($product_categories as $product_category) {
-                    if (!in_array($product_category, $products_categories)) {
-                        $products_categories[] = $product_category;
+            $ordered_products = $this->model_extension_module_advanced_search_nik->getProducts($filter_data);
+            unset($filter_data['ordered_products']);
+
+            $all_products = $this->model_extension_module_advanced_search_nik->getProducts($filter_data);
+
+            $results = array_merge($favorites_products, $ordered_products, $all_products);
+
+            $results = array_unique($results, SORT_REGULAR);
+
+            $results = array_slice($results, 0, $data['module_advanced_search_nik_count_items_for_display']);
+
+            if ($data['module_advanced_search_nik_display_category']) {
+                $products_categories = array();
+                foreach ($results as $result) {
+                    $product_categories = $this->model_extension_module_advanced_search_nik->getCategoriesByProduct($result['product_id']);
+
+                    foreach ($product_categories as $product_category) {
+                        if (!in_array($product_category, $products_categories)) {
+                            $products_categories[] = $product_category;
+                        }
                     }
                 }
-            }
 
-            $categories_info = array();
+                $categories_info = array();
 
-            foreach ($products_categories as $product_category) {
-                $categories_info[] = $this->model_extension_module_advanced_search_nik->getCategory($product_category['category_id']);
-            }
+                foreach ($products_categories as $product_category) {
+                    $categories_info[] = $this->model_extension_module_advanced_search_nik->getCategory($product_category['category_id']);
+                }
 
-            foreach ($categories_info as $category_info) {
-                $category_parents = $this->model_extension_module_advanced_search_nik->getCategoryParents($category_info['parent_id']);
+                $categories_info = array_slice($categories_info, 0, $data['module_advanced_search_nik_count_category_for_display']);
 
-                $json[] = array(
+                foreach ($categories_info as $category_info) {
+                    $category_parents = $this->model_extension_module_advanced_search_nik->getCategoryParents($category_info['parent_id']);
+
+                    $json[] = array(
 //                    'product_id' => $category_info['category_id'],
-                    'name'        => $category_info['name'],
-                    'type'        => 'category',
-                    'description' => $category_parents ? $category_parents['name'] : ''
-                );
-            }
-
-            $products_manufacturers = array();
-
-            foreach ($results as $result) {
-                $product_manufacturer= $this->model_extension_module_advanced_search_nik->getManufacturer($result['manufacturer_id']);
-                if(!in_array($product_manufacturer, $products_manufacturers)) {
-                    $products_manufacturers[] = $product_manufacturer;
+                        'name' => $category_info['name'],
+                        'type' => 'category',
+                        'description' => $category_parents ? $category_parents['name'] : ''
+                    );
                 }
             }
-            
-            foreach ($products_manufacturers as $product_manufacturer) {
-                $json[] = array(
+
+
+            if ($data['module_advanced_search_nik_display_brands']) {
+                $products_manufacturers = array();
+
+                foreach ($results as $result) {
+                    $product_manufacturer = $this->model_extension_module_advanced_search_nik->getManufacturer($result['manufacturer_id']);
+                    if (!in_array($product_manufacturer, $products_manufacturers)) {
+                        $products_manufacturers[] = $product_manufacturer;
+                    }
+                }
+
+                $products_manufacturers = array_slice($products_manufacturers, 0, $data['module_advanced_search_nik_count_brands_for_display']);
+
+                foreach ($products_manufacturers as $product_manufacturer) {
+                    $json[] = array(
 //                    'product_id' => $product_manufacturer['manufacturer_id'],
-                    'name'        => $product_manufacturer['name'],
-                    'image'       => $this->model_tool_image->resize($product_manufacturer['image'], 20, 20),
-                    'type'        => 'manufacturer',
-                    'description' => $this->language->get('text_brand')
-                );
+                        'name' => $product_manufacturer['name'],
+                        'image' => $this->model_tool_image->resize($product_manufacturer['image'], 20, 20),
+                        'type' => 'manufacturer',
+                        'description' => $this->language->get('text_brand')
+                    );
+                }
             }
 
             foreach ($results as $result) {
@@ -118,9 +155,7 @@ class ControllerExtensionModuleAdvancedSearchNik extends Controller {
             }
         }
 
-        $arr_length = $data['module_advanced_search_nik_count_items_for_display'] ? $data['module_advanced_search_nik_count_items_for_display'] : 10;
-
         $this->response->addHeader('Content-Type: application/json');
-        $this->response->setOutput(json_encode(array_slice($json, 0, $arr_length)));
+        $this->response->setOutput(json_encode($json));
     }
 }

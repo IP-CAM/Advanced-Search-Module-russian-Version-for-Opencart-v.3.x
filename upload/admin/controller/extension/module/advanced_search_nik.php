@@ -44,10 +44,30 @@ class ControllerExtensionModuleAdvancedSearchNik extends Controller {
 
 		$data['cancel'] = $this->url->link('marketplace/extension', 'user_token=' . $this->session->data['user_token'] . '&type=module', true);
 
+        $data['user_token'] = $this->session->data['user_token'];
+
         if (isset($this->request->post['module_advanced_search_nik_display_category'])) {
             $data['module_advanced_search_nik_display_category'] = $this->request->post['module_advanced_search_nik_display_category'];
         } else {
             $data['module_advanced_search_nik_display_category'] = $this->config->get('module_advanced_search_nik_display_category');
+        }
+
+        if (isset($this->request->post['module_advanced_search_nik_count_category_for_display'])) {
+            $data['module_advanced_search_nik_count_category_for_display'] = $this->request->post['module_advanced_search_nik_count_category_for_display'];
+        } else {
+            $data['module_advanced_search_nik_count_category_for_display'] = $this->config->get('module_advanced_search_nik_count_category_for_display');
+        }
+
+        if (isset($this->request->post['module_advanced_search_nik_display_brands'])) {
+            $data['module_advanced_search_nik_display_brands'] = $this->request->post['module_advanced_search_nik_display_brands'];
+        } else {
+            $data['module_advanced_search_nik_display_brands'] = $this->config->get('module_advanced_search_nik_display_brands');
+        }
+
+        if (isset($this->request->post['module_advanced_search_nik_count_brands_for_display'])) {
+            $data['module_advanced_search_nik_count_brands_for_display'] = $this->request->post['module_advanced_search_nik_count_brands_for_display'];
+        } else {
+            $data['module_advanced_search_nik_count_brands_for_display'] = $this->config->get('module_advanced_search_nik_count_brands_for_display');
         }
 
         if (isset($this->request->post['module_advanced_search_nik_count_items_for_display'])) {
@@ -60,6 +80,33 @@ class ControllerExtensionModuleAdvancedSearchNik extends Controller {
             $data['module_advanced_search_nik_display_product_image'] = $this->request->post['module_advanced_search_nik_display_product_image'];
         } else {
             $data['module_advanced_search_nik_display_product_image'] = $this->config->get('module_advanced_search_nik_display_product_image');
+        }
+
+        if (isset($this->request->post['module_advanced_search_nik_favorite_products'])) {
+            $data['module_advanced_search_nik_favorite_products'] = $this->request->post['module_advanced_search_nik_favorite_products'];
+        } else {
+            $data['module_advanced_search_nik_favorite_products'] = $this->config->get('module_advanced_search_nik_favorite_products');
+        }
+
+        if ($data['module_advanced_search_nik_favorite_products']) {
+            $products = $data['module_advanced_search_nik_favorite_products'];
+        } else {
+            $products = array();
+        }
+
+        $this->load->model('catalog/product');
+
+        $data['products'] = array();
+
+        foreach ($products as $product_id) {
+            $product_info = $this->model_catalog_product->getProduct($product_id);
+
+            if ($product_info) {
+                $data['products'][] = array(
+                    'product_id' => $product_info['product_id'],
+                    'name'       => $product_info['name']
+                );
+            }
         }
 
         if (isset($this->request->post['module_advanced_search_nik_module_class'])) {
