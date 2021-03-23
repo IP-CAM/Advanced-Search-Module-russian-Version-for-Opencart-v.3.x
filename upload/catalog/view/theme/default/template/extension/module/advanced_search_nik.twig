@@ -242,20 +242,23 @@
                   success: function(json) {
                       response($.map(json, function(item) {
                           return {
-                              label:       item.name,
-                              value:       item.name,
-                              image:       item.image,
+                              label      : item.search_name ? item.search_name : item.name,
+                              value      : item.name,
+                              image      : item.image,
                               description: item.description,
-                              type:        item.type,
-                              price:       item.price
+                              type       : item.type,
+                              price      : item.price,
+                              link       : item.link
                           }
                       }));
                   }
               });
           },
           select: function(event, ui) {
-              $('#advanced-search-field').val(ui.item.label);
-              $('.advanced-search-icon').trigger('click');
+              if(!ui.item.link) {
+                  $('#advanced-search-field').val(ui.item.value);
+                  $('.advanced-search-icon').trigger('click');
+              }
               return false;
           },
           // position: {  collision: "fit"  },
@@ -285,7 +288,13 @@
       }).data("ui-autocomplete")._renderItem = function (ul, item) {
           let re = new RegExp(this.term.trim(), "ig");
           let t = item.label.replace(re, "<span style='font-weight:bold;'>" + this.term + "</span>");
-          let html = "<a class='advanced-search-autocomplete-a'>"
+          let html = "<a class='advanced-search-autocomplete-a'"
+
+              if (item.link) {
+                  html += "href='" + item.link +"'"
+              }
+
+              html += ">"
 
           if (item.type === 'manufacturer' && item.image) {
               html += "<img src='" + item.image + "' />"
