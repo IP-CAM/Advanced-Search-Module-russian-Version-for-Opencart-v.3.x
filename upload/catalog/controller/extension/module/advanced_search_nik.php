@@ -12,9 +12,7 @@ class ControllerExtensionModuleAdvancedSearchNik extends Controller {
 //        var_dump($data);
 //        echo "</pre>";
 
-        if ($data['module_advanced_search_nik_display_category']) {
-            $data['categories'] = $this->model_extension_module_advanced_search_nik->getCategories();
-        }
+        $data['categories'] = $this->model_extension_module_advanced_search_nik->getCategories();
 
 		return $this->load->view('extension/module/advanced_search_nik', $data);
 	}
@@ -32,15 +30,15 @@ class ControllerExtensionModuleAdvancedSearchNik extends Controller {
 
             $data = $this->model_setting_setting->getSetting('module_advanced_search_nik');
 
-            if(!$data['module_advanced_search_nik_count_items_for_display']) {
+            if(!isset($data['module_advanced_search_nik_count_items_for_display'])) {
                 $data['module_advanced_search_nik_count_items_for_display'] = 10;
             }
 
-            if(!$data['module_advanced_search_nik_count_brands_for_display']) {
+            if(!isset($data['module_advanced_search_nik_count_brands_for_display'])) {
                 $data['module_advanced_search_nik_count_brands_for_display'] = 10;
             }
 
-            if(!$data['module_advanced_search_nik_count_category_for_display']) {
+            if(!isset($data['module_advanced_search_nik_count_category_for_display'])) {
                 $data['module_advanced_search_nik_count_category_for_display'] = 10;
             }
 

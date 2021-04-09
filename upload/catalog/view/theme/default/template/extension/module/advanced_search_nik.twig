@@ -165,7 +165,6 @@
 
 <div class="advanced-search {{ module_advanced_search_nik_module_class }}">
   <div class="advanced-search-container">
-    {% if module_advanced_search_nik_display_category %}
     <span class="advanced-search-category-select advanced-search-base-styles dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">
       <span class="advanced-search-category-name" id="advanced-search-category-name">Категории</span>
       <span class="caret"></span>
@@ -178,9 +177,9 @@
       <li role="separator" class="divider"></li>
       <li><a href="#" data-title="Категории">Все категории</a></li>
     </ul>
-    {% endif %}
+
     <input type="hidden" id="advanced-search-selected-category-id">
-    <input type="text" id="advanced-search-field" class="advanced-search-field advanced-search-base-styles {% if not module_advanced_search_nik_display_category %}advanced-search-no-category{% endif %}" placeholder="{{ text_search }}" />
+    <input type="text" id="advanced-search-field" class="advanced-search-field advanced-search-base-styles" placeholder="{{ text_search }}" />
     <input type="text" id="advanced-search-field-placeholder" class="advanced-search-field-placeholder" value="" />
     <span class="advanced-search-icon">
       <i class="fa fa-search"></i>
@@ -237,7 +236,7 @@
           // delay: 100,
           source: function(request, response) {
               $.ajax({
-                  url: 'index.php?route=extension/module/advanced_search_nik/autocomplete&filter_name=' +  encodeURIComponent(request.term) + '&filter_category=' + $('#advanced-search-selected-category-id').val(),
+                  url: 'index.php?route=extension/module/advanced_search_nik/autocomplete&filter_name=' +  request.term + '&filter_category=' + $('#advanced-search-selected-category-id').val(),
                   dataType: 'json',
                   success: function(json) {
                       response($.map(json, function(item) {
@@ -276,7 +275,7 @@
 
                   let t = ui.content[0].label.replace(re, event.target.value.trim());
 
-                  if((ui.content[0].label.length >= event.target.value.trim().length) && ui.content[0].label.toLowerCase().includes(event.target.value.trim())) {
+                  if((ui.content[0].label.length >= event.target.value.trim().length) && ui.content[0].label.toLowerCase().includes(event.target.value.trim()) && ui.content[0].label.toLowerCase().startsWith(event.target.value.trim())) {
                       $('.advanced-search-field-placeholder').val(t)
                   } else {
                       $('.advanced-search-field-placeholder').val('')

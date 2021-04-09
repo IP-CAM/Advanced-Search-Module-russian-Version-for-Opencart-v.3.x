@@ -87,11 +87,7 @@ class ModelExtensionModuleAdvancedSearchNik extends Model {
                 $words = explode(' ', trim(preg_replace('/\s+/', ' ', $data['filter_name'])));
 
                 foreach ($words as $k => $word) {
-                    if($k == 0) {
-                        $implode[] = "CONCAT(pd.name, ' ', m.name) LIKE '%" . $this->db->escape($word) . "%'";
-                    } else {
-                        $implode[] = "CONCAT(pd.name, ' ', m.name) LIKE '%" . $this->db->escape($word) . "%'";
-                    }
+                    $implode[] = "pd.name LIKE '%" . $this->db->escape($word) . "%'";
                 }
 
                 if ($implode) {
