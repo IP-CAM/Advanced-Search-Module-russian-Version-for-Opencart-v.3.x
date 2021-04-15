@@ -8,10 +8,6 @@ class ControllerExtensionModuleAdvancedSearchNik extends Controller {
 
         $data = $this->model_setting_setting->getSetting('module_advanced_search_nik');
 
-//        echo "<pre>";
-//        var_dump($data);
-//        echo "</pre>";
-
         $data['categories'] = $this->model_extension_module_advanced_search_nik->getCategories();
 
 		return $this->load->view('extension/module/advanced_search_nik', $data);
@@ -65,7 +61,7 @@ class ControllerExtensionModuleAdvancedSearchNik extends Controller {
                 'filter_category_id' => $filter_category,
                 'start'              => 0,
                 'limit'              => $limit,
-                'favorite_products'  => $data['module_advanced_search_nik_favorite_products'] ? $data['module_advanced_search_nik_favorite_products'] : array()
+                'favorite_products'  => isset($data['module_advanced_search_nik_favorite_products']) ? $data['module_advanced_search_nik_favorite_products'] : array()
             );
 
             $favorites_products = $this->model_extension_module_advanced_search_nik->getProducts($filter_data);
