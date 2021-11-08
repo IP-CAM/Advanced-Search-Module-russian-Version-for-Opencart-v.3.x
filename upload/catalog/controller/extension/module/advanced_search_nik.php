@@ -79,7 +79,7 @@ class ControllerExtensionModuleAdvancedSearchNik extends Controller {
 
             $results = array_unique($results, SORT_REGULAR);
 
-            $results = array_slice($results, 0, $data['module_advanced_search_nik_count_items_for_display']);
+            $results = array_slice($results, 0, $limit);
 
             if ($data['module_advanced_search_nik_display_category']) {
                 $products_categories = array();
